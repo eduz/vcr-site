@@ -1,0 +1,4 @@
+Construa uma landing page de uma empresa de assessoria contabil chamada VCR Assessoria Contábil com os seguintes requisitos:
+- use o logo VCR-LOGO.png e crie uma paleta de cores baseada no logo para o site.
+- descrição do negócio: A VCR Assessoria Contábil é um escritório consolidado com mais de 30 anos de experiência no mercado. Oferecemos atendimento personalizado e especializado para MEI, Simples Nacional e Lucro Presumido. Nossa expertise abrange diversos segmentos: lojas, clínicas e consultorias. Também realizamos declaração de Imposto de Renda para pessoas físicas. Com décadas de atuação, garantimos soluções contábeis eficientes e um relacionamento próximo com cada cliente, adaptando nossos serviços às necessidades específicas de cada empresa e contribuinte.
+- pegue informações de contato e reviews no perfil do Google: https://share.google/KQUROgKQWU0z8tnwu
