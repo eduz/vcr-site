@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exportar OG Image (PNG)</title>
+    <style>
+      body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 24px; }
+      .wrap { max-width: 760px; margin: 0 auto; }
+      button { background: #e31e24; color: #fff; border: 0; padding: 12px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+      button:disabled { opacity: .6; cursor: not-allowed; }
+      .preview { margin-top: 16px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+      .note { color: #555; font-size: 14px; margin-top: 12px; }
+      code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Gerar banner OG (PNG 1200x630)</h1>
+      <p>Este utilitário converte <code>assets/og-image.svg</code> em um PNG 1200x630 para usar nas meta tags sociais.</p>
+      <button id="btn">Gerar e baixar og-image.png</button>
+      <p id="env-note" class="note" style="display:none">Dica: execute via um servidor local para evitar bloqueios do navegador. Ex.: <code>python -m http.server</code> na raiz e acesse <code>http://localhost:8000/assets/og-export.html</code>.</p>
+      <div class="note">Após baixar, mova o arquivo para a pasta <code>assets/</code> do projeto com o nome <code>og-image.png</code>.</div>
+      <div class="preview">
+        <img id="preview" alt="Prévia" width="600" height="315" style="display:block;width:100%;height:auto;" />
+      </div>
+    </div>
+
+    <script>
+      const svgPath = './og-image.svg';
+      const btn = document.getElementById('btn');
+      const preview = document.getElementById('preview');
+
+      async function loadSvgImage(){
+        const img = new Image();
+        img.decoding = 'sync';
+        img.crossOrigin = 'anonymous';
+        return new Promise(async (resolve, reject)=>{
+          try{
+            const res = await fetch(svgPath, { cache: 'no-cache' });
+            if(res.ok){
+              const svg = await res.text();
+              const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+              img.onload = ()=>resolve(img);
+              img.onerror = ()=>reject(new Error('Falha ao carregar imagem (data URL)'));
+              img.src = dataUrl;
+              return;
+            }
+          }catch(_){}
+          img.onload = ()=>resolve(img);
+          img.onerror = ()=>reject(new Error('Falha ao carregar '+svgPath));
+          img.src = svgPath;
+        });
+      }
+
+      async function renderAndDownload() {
+        btn.disabled = true;
+        btn.textContent = 'Gerando...';
+        try {
+          const img = await loadSvgImage();
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 630;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#b71c1c';
+            ctx.fillRect(0,0,1200,630);
+            ctx.drawImage(img, 0, 0, 1200, 630);
+            canvas.toBlob((blob) => {
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'og-image.png';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+              preview.src = canvas.toDataURL('image/png');
+              btn.textContent = 'Gerar e baixar og-image.png';
+              btn.disabled = false;
+            }, 'image/png');
+        } catch (e) {
+          alert('Erro: ' + e.message);
+          btn.textContent = 'Gerar e baixar og-image.png';
+          btn.disabled = false;
+        }
+      }
+
+      btn.addEventListener('click', renderAndDownload);
+      // Ambiente e prévia
+      if (location.protocol === 'file:') {
+        const n = document.getElementById('env-note');
+        if (n) n.style.display = 'block';
+      }
+      preview.src = svgPath;
+    </script>
+  </body>
+  </html>

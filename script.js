@@ -1,10 +1,11 @@
-// Menu mobile toggle
+// Menu mobile toggle e acessibilidade
 const menuToggle = document.getElementById('menuToggle');
 const nav = document.querySelector('.nav');
 
 menuToggle.addEventListener('click', () => {
-    nav.classList.toggle('nav-active');
+    const isActive = nav.classList.toggle('nav-active');
     menuToggle.classList.toggle('active');
+    menuToggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
 });
 
 // Smooth scrolling para links de navegação
@@ -20,6 +21,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 top: targetPosition,
                 behavior: 'smooth'
             });
+            // Fecha o menu no mobile após navegação
+            if (nav.classList.contains('nav-active')) {
+                nav.classList.remove('nav-active');
+                menuToggle.classList.remove('active');
+                menuToggle.setAttribute('aria-expanded', 'false');
+            }
         }
     });
 });

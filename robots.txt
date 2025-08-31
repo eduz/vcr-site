@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.vcrcontabilidade.com.br/sitemap.xml
+

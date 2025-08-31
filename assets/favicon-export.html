@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exportar favicons (PNG)</title>
+    <style>
+      :root{--red:#e31e24;--dark:#2e2e2e}
+      body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 24px; color: var(--dark); }
+      .wrap { max-width: 760px; margin: 0 auto; }
+      h1{font-size: 22px; margin: 0 0 8px}
+      p{margin: 0 0 12px}
+      button { background: var(--red); color: #fff; border: 0; padding: 12px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+      button:disabled { opacity: .6; cursor: not-allowed; }
+      .row{display:flex; gap:12px; flex-wrap:wrap; margin: 12px 0}
+      .card{border:1px solid #eee; border-radius: 8px; padding: 12px; width: 240px}
+      .card h3{font-size:14px;margin:0 0 8px}
+      .note { color: #555; font-size: 14px; margin-top: 12px; }
+      code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
+      img{display:block; width:100%; height:auto; background:#fafafa}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Gerar favicons PNG a partir de favicon.svg</h1>
+      <p>Este utilitário converte <code>../favicon.svg</code> nos tamanhos PNG usados no site.</p>
+      <p id="env-note" class="note" style="display:none">Dica: execute via um servidor local para evitar bloqueios do navegador. Ex.: <code>python -m http.server</code> na raiz do projeto e acesse <code>http://localhost:8000/assets/favicon-export.html</code>.</p>
+      <div class="row">
+        <div class="card">
+          <h3>16x16 (favicon-16.png)</h3>
+          <button data-size="16">Baixar 16x16</button>
+          <img id="prev-16" alt="Prévia 16" />
+        </div>
+        <div class="card">
+          <h3>32x32 (favicon-32.png)</h3>
+          <button data-size="32">Baixar 32x32</button>
+          <img id="prev-32" alt="Prévia 32" />
+        </div>
+        <div class="card">
+          <h3>180x180 (apple-touch-icon.png)</h3>
+          <button data-size="180">Baixar 180x180</button>
+          <img id="prev-180" alt="Prévia 180" />
+        </div>
+      </div>
+      <p class="note">Após baixar, mova os arquivos para a raiz do projeto:<br>
+        <code>/favicon-16.png</code>, <code>/favicon-32.png</code> e <code>/apple-touch-icon.png</code>.</p>
+    </div>
+
+    <script>
+      const SVG_PATH = '../favicon.svg';
+      async function loadSvgImage(){
+        const img = new Image();
+        img.decoding = 'sync';
+        img.crossOrigin = 'anonymous';
+        return new Promise(async (resolve, reject) => {
+          // Tenta usar fetch para construir um data URL (evita canvas tainted)
+          try {
+            const res = await fetch(SVG_PATH, { cache: 'no-cache' });
+            if (res.ok) {
+              const svg = await res.text();
+              const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+              img.onload = () => resolve(img);
+              img.onerror = () => reject(new Error('Falha ao carregar imagem (data URL)'));
+              img.src = dataUrl;
+              return;
+            }
+          } catch (_) {
+            // Fallback para carregar direto do caminho
+          }
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error('Falha ao carregar ../favicon.svg'));
+          img.src = SVG_PATH;
+        });
+      }
+      async function render(size){
+        const img = await loadSvgImage();
+        return new Promise((resolve, reject)=>{
+          try{
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,size,size);
+            ctx.drawImage(img, 0, 0, size, size);
+            canvas.toBlob(blob=>{
+              if(!blob) return reject(new Error('Falha ao gerar PNG'));
+              resolve({ blob, dataUrl: canvas.toDataURL('image/png') });
+            }, 'image/png');
+          }catch(e){ reject(e); }
+        });
+      }
+      async function handleDownload(size){
+        const { blob, dataUrl } = await render(size);
+        const a = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        a.href = url;
+        a.download = size===180 ? 'apple-touch-icon.png' : `favicon-${size}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        const prev = document.getElementById('prev-'+size);
+        if(prev) prev.src = dataUrl;
+      }
+      document.querySelectorAll('button[data-size]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const size = parseInt(btn.getAttribute('data-size'),10);
+          btn.disabled = true; const txt = btn.textContent; btn.textContent = 'Gerando...';
+          try{ await handleDownload(size); } finally { btn.disabled=false; btn.textContent = txt; }
+        });
+      });
+      // Previews iniciais e aviso de ambiente
+      (async ()=>{
+        if (location.protocol === 'file:') {
+          const n = document.getElementById('env-note');
+          if (n) n.style.display = 'block';
+        }
+        const url = '../favicon.svg';
+        ['16','32','180'].forEach(id=>{ const el = document.getElementById('prev-'+id); if(el) el.src = url; });
+      })();
+    </script>
+  </body>
+  </html>

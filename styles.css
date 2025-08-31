@@ -46,6 +46,15 @@ body {
   padding: 1rem 20px;
 }
 
+.header.header-scrolled {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  backdrop-filter: saturate(180%) blur(8px);
+}
+
+.header.header-scrolled .container {
+  padding: 0.6rem 20px;
+}
+
 .logo-img {
   height: 60px;
   width: auto;
@@ -66,6 +75,11 @@ body {
 
 .nav-list a:hover {
   color: var(--primary-red);
+}
+
+.nav-list a.active {
+  color: var(--primary-red);
+  font-weight: 600;
 }
 
 .menu-toggle {
@@ -135,6 +149,15 @@ body {
   border: none;
   cursor: pointer;
   font-size: 1rem;
+}
+
+.btn:focus-visible,
+.nav-list a:focus-visible,
+.whatsapp-btn:focus-visible,
+.contact-link:focus-visible {
+  outline: 3px solid rgba(227, 30, 36, 0.35);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 .btn-primary {
@@ -486,6 +509,23 @@ section {
 .footer-text p {
   margin-bottom: 0.5rem;
   color: #ccc;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: -999px;
+  background: var(--primary-red);
+  color: var(--white);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  z-index: 2000;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
 }
 
 /* Responsive Design */
